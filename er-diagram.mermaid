@@ -1,0 +1,91 @@
+erDiagram
+    Users ||--o{ Posts : "发布"
+    Users ||--o{ Comments : "发表"
+    Users ||--o{ Likes : "点赞"
+    Users ||--o{ Favorites : "收藏"
+    Users ||--o{ Reports : "举报"
+    Users ||--o{ Reports : "处理"
+    Posts ||--o{ Comments : "包含"
+    Posts ||--o{ Likes : "获得"
+    Posts ||--o{ Favorites : "被收藏"
+    Posts ||--o{ Reports : "被举报"
+    Posts ||--o{ Post_Tags : "拥有"
+    Comments ||--o{ Comments : "回复"
+    Comments ||--o{ Likes : "获得"
+    Comments ||--o{ Reports : "被举报"
+    Tags ||--o{ Post_Tags : "关联"
+    
+    Users {
+        int user_id PK
+        string username
+        string password
+        string email
+        datetime registration_time
+        datetime last_login_time
+        boolean is_admin
+        string status
+    }
+    
+    Posts {
+        int post_id PK
+        int user_id FK
+        text content
+        datetime post_time
+        datetime update_time
+        int likes_count
+        int dislikes_count
+        int comments_count
+        int views_count
+        string status
+    }
+    
+    Comments {
+        int comment_id PK
+        int post_id FK
+        int user_id FK
+        text content
+        datetime comment_time
+        int parent_comment_id FK
+        int likes_count
+        string status
+    }
+    
+    Likes {
+        int like_id PK
+        int user_id FK
+        int post_id FK
+        int comment_id FK
+        string like_type
+        datetime like_time
+    }
+    
+    Favorites {
+        int favorite_id PK
+        int user_id FK
+        int post_id FK
+        datetime favorite_time
+    }
+    
+    Reports {
+        int report_id PK
+        int user_id FK
+        int post_id FK
+        int comment_id FK
+        string reason
+        datetime report_time
+        string status
+        int handler_id FK
+        datetime handle_time
+    }
+    
+    Tags {
+        int tag_id PK
+        string tag_name
+        datetime create_time
+    }
+    
+    Post_Tags {
+        int id PK
+        int post_id FK
+        int tag_id FK
+    }

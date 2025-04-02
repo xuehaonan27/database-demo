@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}我的帖子{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>我的帖子</h2>
+            <div>
+                <a href="{{ url_for('new_post') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg"></i> 发帖
+                </a>
+            </div>
+        </div>
+
+        {% if posts %}
+            {% for post in posts %}
+            <div class="card post-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('view_post', post_id=post.post_id) }}" class="text-decoration-none">
+                                {{ post.content|truncate(50) }}
+                            </a>
+                        </h5>
+                        <div class="time-text">{{ post.post_time }}</div>
+                    </div>
+                    <div class="mb-2">
+                        {% for tag in post.tag_list %}
+                        <span class="badge bg-secondary tag-badge">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="me-3"><i class="bi bi-hand-thumbs-up"></i> {{ post.likes_count }}</span>
+                            <span class="me-3"><i class="bi bi-hand-thumbs-down"></i> {{ post.dislikes_count }}</span>
+                            <span class="me-3"><i class="bi bi-chat-left"></i> {{ post.comments_count }}</span>
+                            <span><i class="bi bi-eye"></i> {{ post.views_count }}</span>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('view_post', post_id=post.post_id) }}" class="btn btn-outline-primary btn-sm me-2">查看</a>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deletePost({{ post.post_id }})">删除</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('user_posts', page=page-1) }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for p in range(1, pages + 1) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('user_posts', page=p) }}">{{ p }}</a>
+                    </li>
+                    {% endfor %}
+                    
+                    {% if page < pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('user_posts', page=page+1) }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% else %}
+            <div class="alert alert-info">您还没有发布过帖子</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deletePost(postId) {
+    if (confirm('确定要删除这个帖子吗？')) {
+        $.ajax({
+            url: '/post/' + postId + '/status',
+            method: 'POST',
+            data: {
+                status: 'deleted'
+            },
+            success: function(response) {
+                if (response.includes('成功')) {
+                    location.reload();
+                } else {
+                    alert('删除失败');
+                }
+            },
+            error: function() {
+                alert('删除失败');
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

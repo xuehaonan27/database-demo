@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}帖子详情{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h4 class="card-title">{{ post.content }}</h4>
+                    <div class="time-text">{{ post.post_time }}</div>
+                </div>
+                
+                <div class="mb-3">
+                    {% for tag in post.tag_list %}
+                    <span class="badge bg-secondary tag-badge">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <button id="like-btn" class="btn btn-sm {% if user_liked %}btn-success{% else %}btn-outline-success{% endif %} me-2">
+                            <i class="bi bi-hand-thumbs-up"></i> 点赞 (<span id="likes-count">{{ post.likes_count }}</span>)
+                        </button>
+                        <button id="dislike-btn" class="btn btn-sm {% if not user_liked and user_liked is not none %}btn-danger{% else %}btn-outline-danger{% endif %} me-2">
+                            <i class="bi bi-hand-thumbs-down"></i> 踩 (<span id="dislikes-count">{{ post.dislikes_count }}</span>)
+                        </button>
+                        <button id="favorite-btn" class="btn btn-sm {% if user_favorited %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                            <i class="bi bi-star"></i> {% if user_favorited %}已收藏{% else %}收藏{% endif %}
+                        </button>
+                    </div>
+                    <div>
+                        <span class="me-3"><i class="bi bi-chat-left"></i> {{ post.comments_count }} 评论</span>
+                        <span><i class="bi bi-eye"></i> {{ post.views_count }} 浏览</span>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h5 class="mb-3">评论</h5>
+                
+                <form method="post" action="{{ url_for('add_comment', post_id=post.post_id) }}" class="mb-4">
+                    <div class="mb-3">
+                        <textarea name="content" class="form-control" rows="3" placeholder="写下你的评论..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">发表评论</button>
+                </form>
+                
+                {% if comments %}
+                    {% for comment in comments %}
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="card-subtitle mb-2 text-muted">{{ comment.username }}</h6>
+                                <small class="time-text">{{ comment.comment_time }}</small>
+                            </div>
+                            <p class="card-text">{{ comment.content }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">暂无评论</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // 点赞功能
+    $('#like-btn').click(function() {
+        $.post('{{ url_for("like_post", post_id=post.post_id) }}', {
+            like_type: 'like'
+        }, function(data) {
+            if (data.success) {
+                $('#likes-count').text(data.likes_count);
+                $('#dislikes-count').text(data.dislikes_count);
+                
+                if (data.message.includes('已点赞')) {
+                    $('#like-btn').removeClass('btn-outline-success').addClass('btn-success');
+                    $('#dislike-btn').removeClass('btn-danger').addClass('btn-outline-danger');
+                } else if (data.message.includes('已取消')) {
+                    $('#like-btn').removeClass('btn-success').addClass('btn-outline-success');
+                }
+                
+                alert(data.message);
+            } else {
+                alert(data.message);
+            }
+        });
+    });
+    
+    // 踩功能
+    $('#dislike-btn').click(function() {
+        $.post('{{ url_for("like_post", post_id=post.post_id) }}', {
+            like_type: 'dislike'
+        }, function(data) {
+            if (data.success) {
+                $('#likes-count').text(data.likes_count);
+                $('#dislikes-count').text(data.dislikes_count);
+                
+                if (data.message.includes('已踩')) {
+                    $('#dislike-btn').removeClass('btn-outline-danger').addClass('btn-danger');
+                    $('#like-btn').removeClass('btn-success').addClass('btn-outline-success');
+                } else if (data.message.includes('已取消')) {
+                    $('#dislike-btn').removeClass('btn-danger').addClass('btn-outline-danger');
+                }
+                
+                alert(data.message);
+            } else {
+                alert(data.message);
+            }
+        });
+    });
+    
+    // 收藏功能
+    $('#favorite-btn').click(function() {
+        $.post('{{ url_for("favorite_post", post_id=post.post_id) }}', function(data) {
+            if (data.success) {
+                if (data.is_favorited) {
+                    $('#favorite-btn').removeClass('btn-outline-warning').addClass('btn-warning');
+                    $('#favorite-btn').html('<i class="bi bi-star"></i> 已收藏');
+                } else {
+                    $('#favorite-btn').removeClass('btn-warning').addClass('btn-outline-warning');
+                    $('#favorite-btn').html('<i class="bi bi-star"></i> 收藏');
+                }
+                alert(data.message);
+            } else {
+                alert(data.message);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
