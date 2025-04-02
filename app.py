@@ -14,7 +14,7 @@ app.permanent_session_lifetime = timedelta(days=7)
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'password',
+    'password': 'root',
     'database': 'TreeHole',
     'charset': 'utf8mb4',
     'cursorclass': DictCursor
